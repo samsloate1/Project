@@ -1,0 +1,11 @@
+success>
+	    <command name="createCity"/>
+	    <parameters>
+	        <name value="Annapolis"/>
+	        <x value="12"/>
+	        <y value="14"/>
+	        <radius value="15"/>
+	        <color value="red"/>
+	    </parameters>
+	    <output/>
+	</success>
