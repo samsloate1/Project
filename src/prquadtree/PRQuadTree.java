@@ -36,21 +36,29 @@ public class PRQuadTree<T extends Point2D.Float> {
 		public GreyNode(){
 			NE=NW=SW=SE = WhiteNode.getInstance();
 		}
-		public int ChildCount(){
+		public PRNode singleChild(){
 			int count = 0;
+			PRNode  ret= null;
 			if(!(NW instanceof WhiteNode)){
+				ret = NW;
 				count++;
 			}
 			if(!(NE instanceof WhiteNode)){
+				ret = NE;
 				count++;
 			}
 			if(!(SW instanceof WhiteNode)){
+				ret = SW;
 				count++;
 			}
 			if(!(SE instanceof WhiteNode)){
+				ret = SE;
 				count++;
 			}
-			return count;
+			if(count > 1){
+				return null;
+			}
+			return ret;
 		}
 	}
 
@@ -189,26 +197,34 @@ public class PRQuadTree<T extends Point2D.Float> {
 		float x = elem.x;
 		float y = elem.y;
 		
-		if(root instanceof PRQuadTree.GreyNode){
+		if(node instanceof PRQuadTree.GreyNode){
 			int xMid = (widthMin + widthMax)/2;
 			int yMid = (heightMin+heightMax)/2;
 			if(x > xMid && y > yMid){//NE
-				
+				((PRQuadTree.GreyNode)node).NE = deleteHelper(((PRQuadTree.GreyNode)node).NE,
+						elem,xMid,widthMax,yMid,heightMax);
 			}else if(x >xMid && y<yMid){//SE
-				
+				((PRQuadTree.GreyNode)node).SE = deleteHelper(((PRQuadTree.GreyNode)node).SE,
+						elem,xMid,widthMax,yMid,heightMax);
 			}else if( x< xMid && y < yMid){//SW
-				
+				((PRQuadTree.GreyNode)node).SW = deleteHelper(((PRQuadTree.GreyNode)node).SW,
+						elem,xMid,widthMax,yMid,heightMax);
 			}else if( x < xMid && y >yMid){//NW
-				
+				((PRQuadTree.GreyNode)node).NW = deleteHelper(((PRQuadTree.GreyNode)node).NW,
+						elem,xMid,widthMax,yMid,heightMax);
+			}
+			PRNode s = ((PRQuadTree.GreyNode)node).singleChild();
+			if(s!= null){
+				node = s;
 			}
 		}	
-		else if(root instanceof PRQuadTree.BlackNode){
-			Point2D.Float nodeValues = ((PRQuadTree.BlackNode) root).element;
+		else if(node instanceof PRQuadTree.BlackNode){
+			Point2D.Float nodeValues = ((PRQuadTree.BlackNode) node).element;
 			if(nodeValues.x == elem.x && nodeValues.y ==elem.y){
-				return 
+				node = WhiteNode.getInstance();
 			}
 		}
-		return null;
+		return node;
 	}
 	public boolean delete(T elem){
 		//Pass the city from the dictionary
@@ -219,8 +235,8 @@ public class PRQuadTree<T extends Point2D.Float> {
 		root = deleteHelper(root,elem,widthMin,widthMax,heightMin,heightMax);
 		return false;
 	}
+	
 	public T find(T elem){
-		//TODO
 		return null;
 	}
 
