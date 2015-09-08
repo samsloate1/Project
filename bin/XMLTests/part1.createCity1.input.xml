@@ -11,4 +11,6 @@
  <createCity name="Z" x="2" y="4" radius="10"  color="black"/>
  <createCity name="A" x="3" y="2" radius="24"  color="green"/>
  <listCities sortBy="coordinate"/> 
+ <mapCity name = "A"/>
+ <unmapCity name="A"/>
 </commands>

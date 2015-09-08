@@ -10,6 +10,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import cmsc420.drawing.CanvasPlus;
 
 import Structures.City;
@@ -44,8 +48,11 @@ public class PRQuadTree<T extends Point2D.Float> {
 	private class GreyNode implements PRInner{
 
 		public PRNode NE,NW,SW,SE;
-		public GreyNode(){
+		public int x,y;
+		public GreyNode(int midX, int midY){
 			NE=NW=SW=SE = WhiteNode.getInstance();
+			x = midX;
+			y = midY;
 		}
 		public PRNode singleChild(){
 			int count = 0;
@@ -166,12 +173,13 @@ public class PRQuadTree<T extends Point2D.Float> {
 			//Store the current info
 			BlackNode temp =  (BlackNode) node;
 			//add a new grey node that splits the grid
-			node = new GreyNode();
+		
 			//put the info back  in  then call insertHelper  on this grey node again
 			float x = temp.element.x;
 			float y = temp.element.y;
 			int midX = (widthMin+widthMax)/2;
 			int midY = (heightMin+heightMax)/2;
+			node = new GreyNode(midX,midY);
 			//For each direction
 			if(x > midX && y > midY){//NE
 				((PRQuadTree.GreyNode)node).NE = temp;
@@ -311,6 +319,36 @@ public class PRQuadTree<T extends Point2D.Float> {
 		return findHelper(root, elem, widthMin, widthMax, heightMin, heightMax);
 	}
 	
+	public Node PRNodeprint(PRNode node,Document results){
+		if(node instanceof WhiteNode){
+			Element white = results.createElement("white");
+			return white;
+		}
+		if(node instanceof PRQuadTree.BlackNode){
+			Element black = results.createElement("black");
+			City city = (City) ((PRQuadTree.BlackNode) root).element;
+			black.setAttribute("name", city.getName());
+			black.setAttribute("x", Float.toString(city.x));
+			black.setAttribute("y", Float.toString(city.y));
+			return black;
+		}
+		if(node instanceof PRQuadTree.GreyNode){
+			//TODO verify the ordering
+			Element greyRoot = results.createElement("gray");
+			greyRoot.setAttribute("x", Integer.toString(((PRQuadTree.GreyNode) node).x));
+			greyRoot.setAttribute("y", Integer.toString(((PRQuadTree.GreyNode) node).y));
+			greyRoot.appendChild(PRNodeprint(((PRQuadTree.GreyNode) node).NE,results));
+			greyRoot.appendChild(PRNodeprint(((PRQuadTree.GreyNode) node).SE,results));
+			greyRoot.appendChild(PRNodeprint(((PRQuadTree.GreyNode) node).SW,results));
+			greyRoot.appendChild(PRNodeprint(((PRQuadTree.GreyNode) node).NW,results));
+			return greyRoot;
+		}
+		return null;
+	}
+	
+	public void printQuadTree(Element quadTree,Document results){
+		quadTree.appendChild(PRNodeprint(root,results));
+	}
 	
 	private class DistanceComparator<T extends Point2D.Float> implements Comparator{
 		float x = -1;

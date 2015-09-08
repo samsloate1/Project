@@ -10,6 +10,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import prquadtree.PRQuadTree;
+
 import Structures.City;
 
 public class NodeMaker {
@@ -172,6 +174,19 @@ public class NodeMaker {
 			return makeNode(true,error, "unmapCity", parameterList, outputList);
 		else
 			return makeNode(false,error, "unmapCity", parameterList, outputList);
+	}
+	
+	public Node printPRTree(PRQuadTree<City> pr,String error){
+		List<Node> parameterList = new LinkedList<Node>();
+		List<Node> outputList = new LinkedList<Node>();
+		Element quadtreeElement = results.createElement("quadtree");
+		if(error == null){
+			pr.printQuadTree(quadtreeElement, results);
+			outputList.add(quadtreeElement);
+			return makeNode(true,error, "printPRQuadTree", parameterList, outputList);
+		}else{
+			return makeNode(false,error,"printPRQuadTree",parameterList,outputList);
+		}
 	}
 
 }

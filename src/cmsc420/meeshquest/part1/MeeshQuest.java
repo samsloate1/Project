@@ -70,7 +70,6 @@ public class MeeshQuest {
     private static void processCommands(CommandParser command,Element commandNode,Document results,
     		int spatialHeight,int spatialWidth, Element resultElement){
     	String commandType = commandNode.getNodeName();
-    	System.out.println(commandType);
     	//TODO create methods that will make cities and delete them
     	//Could have the functionality in a dictionary class if wanted
     	
@@ -79,9 +78,9 @@ public class MeeshQuest {
     		case "deleteCity": resultElement.appendChild(command.deleteCity(commandNode));break;
     		case "clearAll": resultElement.appendChild(command.clearAll(commandNode));break;
     		case "listCities": resultElement.appendChild(command.listCities(commandNode));break;
-    		case "mapCity" : command.mapCity(commandNode);break;
-    		case "unmapCity" :command.unmapCity(commandNode);break;
-    		case "printPRQuadtree": command.printPRQuadTree(commandNode);break;
+    		case "mapCity" : resultElement.appendChild(command.mapCity(commandNode));break;
+    		case "unmapCity" :resultElement.appendChild(command.unmapCity(commandNode));break;
+    		case "printPRQuadtree": resultElement.appendChild(command.printPRQuadTree(commandNode));break;
     		case "saveMap": command.saveMap(commandNode);break;
     		case "rangeCities": command.rangeCities(commandNode);break;
     		case "nearestCity": command.nearestCity(commandNode);break;

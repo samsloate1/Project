@@ -34,6 +34,8 @@ public class CommandParser {
 		nameToCity = new TreeMap<String,City>(nameCompare);
 		cityLocations = new TreeMap<Point2D.Float,City>(locationCompare);
 		mappedCities = new HashSet<String>();
+		this.spatialWidth = spatialWidth;
+		this.spatialHeight = spatialHeight;
 		this.results = results;
 	}
 
@@ -57,7 +59,6 @@ public class CommandParser {
 			}else{
 				City newCity = new City(name, color, x, y,rad);
 				nameToCity.put(name, newCity);
-				System.out.println(nameToCity);
 				cityLocations.put(new Point2D.Float(x, y), newCity);
 				return maker.createCityXml(true,null,name,x,y,rad,color);
 			}
@@ -120,7 +121,7 @@ public class CommandParser {
 				return maker.mapCity(name, error);
 			}else{
 				if(city.x > spatialWidth || city.x < 0 || 
-						city.y	>spatialHeight || city.y < 0){
+						city.y	> spatialHeight || city.y < 0){
 					error = "cityOutOfBounds";
 					return maker.mapCity(name, error);
 				}else{
@@ -156,8 +157,13 @@ public class CommandParser {
 
 	}
 
-	public void printPRQuadTree(Element commandNode) {
-		// TODO Auto-generated method stub
+	public Node printPRQuadTree(Element commandNode) {
+		NodeMaker maker = new NodeMaker(results);
+		String error = null;
+		if(mappedCities.isEmpty()){
+			error = "mapIsEmpty";
+		}
+		return maker.printPRTree(prtree, error);
 
 	}
 
