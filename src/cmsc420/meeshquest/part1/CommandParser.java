@@ -1,12 +1,15 @@
 package cmsc420.meeshquest.part1;
 
 import java.awt.geom.Point2D;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.TreeMap;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import prquadtree.PRQuadTree;
 
 import xml.NodeMaker;
 
@@ -16,21 +19,24 @@ import comparator.CityLocationComparator;
 import comparator.CityNameComparator;
 
 public class CommandParser {
-	
+
 	private TreeMap<String,City> nameToCity = null;
+	private HashSet<String> mappedCities = null;
+	private PRQuadTree<City> prtree = null;
 	private TreeMap<Point2D.Float,City> cityLocations = new TreeMap<Point2D.Float,City>();
 	int spatialHeight = -1;
 	int spatialWidth = -1;
 	Document results = null;
-	
+
 	public CommandParser(int spatialHeight, int spatialWidth, Document results){
 		CityNameComparator nameCompare = new CityNameComparator();
 		CityLocationComparator locationCompare = new CityLocationComparator();
 		nameToCity = new TreeMap<String,City>(nameCompare);
 		cityLocations = new TreeMap<Point2D.Float,City>(locationCompare);
+		mappedCities = new HashSet<String>();
 		this.results = results;
 	}
-	
+
 	public Node createCity(Element commandNode) {
 		//Check if the city exists, if not add the city
 		String name = commandNode.getAttribute("name");
@@ -73,7 +79,7 @@ public class CommandParser {
 			String error = "cityDoesNotExist";
 			return maker.deleteCityXml(true, false, error, name);
 		}
-		
+
 	}
 
 	public Node clearAll(Element commandNode) {
@@ -82,8 +88,8 @@ public class CommandParser {
 		nameToCity.clear();
 		return maker.clearAllXml();
 		//TODO clear the PRquad tree
-		
-		
+
+
 	}
 
 	public Node listCities(Element commandNode) {
@@ -97,37 +103,77 @@ public class CommandParser {
 			//TODO figure out this case, get clarification
 			return null;
 		}
-		
+
 	}
 
-	public void mapCity(Element commandNode) {
-		// TODO Auto-generated method stub
-		
+	public Node mapCity(Element commandNode) {
+		NodeMaker maker = new NodeMaker(results);
+		String name = commandNode.getAttribute("name");
+		String error = null;
+		if(mappedCities.contains(name)){
+			error = "cityAlreadyMapped";
+			return maker.mapCity(name,error);
+		}else{
+			City city = nameToCity.get(name);
+			if(city == null){
+				error= "nameNotInDictionary";
+				return maker.mapCity(name, error);
+			}else{
+				if(city.x > spatialWidth || city.x < 0 || 
+						city.y	>spatialHeight || city.y < 0){
+					error = "cityOutOfBounds";
+					return maker.mapCity(name, error);
+				}else{
+					if(prtree == null){
+						prtree = new PRQuadTree<City>(spatialWidth, spatialHeight, city);
+					}else{
+						prtree.insert(city);
+					}
+					mappedCities.add(name);
+					return maker.mapCity(name, error);
+				}
+			}
+		}
 	}
 
-	public void unmapCity(Element commandNode) {
-		// TODO Auto-generated method stub
-		
+	public Node unmapCity(Element commandNode) {
+		NodeMaker maker = new NodeMaker(results);
+		String name = commandNode.getAttribute("name");
+		String error = null;
+		City city = nameToCity.get(name);
+		if(city ==null){
+			//TODO errror remove from mappedlist
+			error = "nameNotInDictionary";
+			return maker.unmapCity(name,error);
+		}else if(!mappedCities.contains(name)){
+			error = "cityNotMapped";
+			return maker.unmapCity(name,error);
+		}else{
+			prtree.delete(city);
+			mappedCities.remove(name);
+			return maker.unmapCity(name,null);
+		}
+
 	}
 
 	public void printPRQuadTree(Element commandNode) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void saveMap(Element commandNode) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void rangeCities(Element commandNode) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void nearestCity(Element commandNode) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 }

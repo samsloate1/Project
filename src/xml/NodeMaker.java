@@ -146,4 +146,32 @@ public class NodeMaker {
 		}
 		return makeNode(true,null,"listCities",parameterList,output);//TODO create cityList element with all the  cities
 	}
+
+	public Node mapCity(String city, String error) {
+		List<Node> parameterList = new LinkedList<Node>();
+		List<Node> outputList  = new LinkedList<Node>();
+		Element element = results.createElement("name");
+		element.setAttribute("value", city);
+		parameterList.add(element);
+		// TODO Auto-generated method stub
+		if(error == null)
+			return makeNode(true,error, "mapCity", parameterList, outputList);
+		else
+			return makeNode(false,error, "mapCity", parameterList, outputList);
+
+	}
+
+	public Node unmapCity(String city, String error) {
+		List<Node> parameterList = new LinkedList<Node>();
+		List<Node> outputList  = new LinkedList<Node>();
+		Element element = results.createElement("name");
+		element.setAttribute("value", city);
+		parameterList.add(element);
+		// TODO Auto-generated method stub
+		if(error == null)
+			return makeNode(true,error, "unmapCity", parameterList, outputList);
+		else
+			return makeNode(false,error, "unmapCity", parameterList, outputList);
+	}
+
 }
