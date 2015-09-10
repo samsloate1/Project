@@ -107,6 +107,7 @@ public class NodeMaker {
 		cityElement.setAttribute("radius", Float.toString(city.getRadius()));
 		return cityElement;
 	}
+	
 	public Node listCitiesName(TreeMap<String,City> cityNames){
 		List<Node> parameterList = new LinkedList<Node>();
 		Element sortBy = results.createElement("sortBy");
@@ -119,14 +120,12 @@ public class NodeMaker {
 		}
 		
 		for(Entry<String, City> c: cityNames.entrySet()){
-			//TODO add to the beginning to get descending order
 			City city = c.getValue();
 			Element cityElement = cityElement(city);
 			output.add(0, cityElement);
-			//TODO check out the ordering	
 		}
 
-		return makeNode(true,null, "listCities", parameterList, output);//TODO create element and iterate through
+		return makeNode(true,null, "listCities", parameterList, output);
 	}
 	public Node listCitiesPoint(TreeMap<Point2D.Float,City> coordinates){
 		List<Node> parameterList = new LinkedList<Node>();
@@ -187,6 +186,67 @@ public class NodeMaker {
 		}else{
 			return makeNode(false,error,"printPRQuadTree",parameterList,outputList);
 		}
+	}
+	
+	public Node saveMap(String name){
+		List<Node> parameterList = new LinkedList<Node>();
+		Element saveFile = results.createElement("name");
+		saveFile.setAttribute("value",name);
+		parameterList.add(saveFile);
+		List<Node> outputList = new LinkedList<Node>();
+		return makeNode(true,null,"saveMap",parameterList,outputList);
+		
+	}
+
+	public Node rangeCities(String radius, String x, String y, String saveMap,
+			TreeMap<String, City> cities,String error) {
+		List<Node> parameterList = new LinkedList<Node>();
+		Element xEl = results.createElement("x");
+		xEl.setAttribute("value", x);
+		Element yEl = results.createElement("y");
+		yEl.setAttribute("value", x);
+		Element rad = results.createElement("radius");
+		rad.setAttribute("value", radius);
+		parameterList.add(xEl);
+		parameterList.add(yEl);
+		parameterList.add(rad);
+		if(!saveMap.equals("")){
+			Element save = results.createElement("saveMap");
+			save.setAttribute("name", saveMap);
+			parameterList.add(save);
+		}
+		List<Node> output = new LinkedList<Node>();
+		for(Entry<String, City> c: cities.entrySet()){
+			City city = c.getValue();
+			Element cityElement = cityElement(city);
+			output.add(0, cityElement);
+		}
+		boolean success = false;
+		if(error != null){
+			success = true;
+		}
+		return makeNode(success,error,"rangeCities", parameterList,output);
+	}
+
+	public Node nearestCity(String x, String y, String error, City c) {
+		List<Node> parameterList = new LinkedList<Node>();
+		Element xEl = results.createElement("x");
+		xEl.setAttribute("value", x);
+		Element yEl = results.createElement("y");
+		yEl.setAttribute("value", x);
+		List<Node> output = new LinkedList<Node>();
+		if(error == null){
+			Element city = results.createElement("city");
+			city.setAttribute("name", c.getName());
+			city.setAttribute("x", Float.toString(c.x));
+			city.setAttribute("y", Float.toString(c.y));
+			city.setAttribute("color", c.getColor());
+			city.setAttribute("radius", Integer.toString(c.getRadius()));
+			return makeNode(true,null,"nearestCity",parameterList,output);
+		}else{
+			return makeNode(false,error,"nearestCity",parameterList,output);
+		}
+		
 	}
 
 }

@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.TreeMap;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -18,16 +19,16 @@ import cmsc420.drawing.CanvasPlus;
 
 import Structures.City;
 
-public class PRQuadTree<T extends Point2D.Float> {
+public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.PRNode>{
 	//width = x
 	//height = y
 	private int heightMax,heightMin,widthMax,widthMin = -1;
 	private PRNode root = null;
 
-	interface PRNode{};
+	public interface PRNode{};
 	interface PRInner extends PRNode{};
 	interface PRLeaf extends PRNode{};
-	private static class WhiteNode implements PRLeaf{
+	static class WhiteNode implements PRLeaf{
 		private static WhiteNode instance = null;
 		public static WhiteNode getInstance(){
 			if(instance == null)
@@ -38,21 +39,22 @@ public class PRQuadTree<T extends Point2D.Float> {
 
 		}
 	}
-	private class BlackNode implements PRLeaf{
-		T element;
+	public class BlackNode implements PRLeaf{
+		public T element;
 
 		public BlackNode(T elem){
 			element = elem;
 		}
 	}
-	private class GreyNode implements PRInner{
+	public class GreyNode implements PRInner{
 
 		public PRNode NE,NW,SW,SE;
-		public int x,y;
-		public GreyNode(int midX, int midY){
+		public int x,y,span;
+		public GreyNode(int midX, int midY,int length){
 			NE=NW=SW=SE = WhiteNode.getInstance();
 			x = midX;
 			y = midY;
+			span = length;
 		}
 		public PRNode singleChild(){
 			int count = 0;
@@ -88,63 +90,6 @@ public class PRQuadTree<T extends Point2D.Float> {
 		root = new BlackNode(elem);	
 	}
 
-	
-//
-//	public boolean greyNode(PRNode curr, T elem,int  width,
-//			int widthMax,int heightMin,int heightMax){
-//		int xMid = (widthMax+widthMin)/2;
-//		int yMid = (heightMax+heightMin)/2;
-//		float x = elem.x;
-//		float y = elem.y;
-//		if( x > xMid && y > yMid){
-//			//NE
-//			return insertHelper(((PRQuadTree.GreyNode) curr).NE,elem,
-//					xMid,widthMax,yMid,heightMax);
-//		}else if( x >xMid && y < yMid  ){
-//			//SE
-//			return insertHelper(((PRQuadTree.GreyNode) curr).SE,elem,
-//					xMid,widthMax,heightMin,yMid);			
-//		}else if ( x< xMid && y <yMid){
-//			//SW
-//			return insertHelper(((PRQuadTree.GreyNode)curr).SW,elem,
-//					widthMin,xMid,heightMin,yMid);
-//		}else{
-//			return insertHelper(((PRQuadTree.GreyNode)curr).NW,elem,
-//					widthMin,xMid,yMid,heightMax);
-//		}
-//	}
-//
-//	public boolean blackNode(PRNode curr, T elem,int widthMin,int widthMax,
-//			int  heightMin,	int heightMax){
-//		BlackNode temp = (BlackNode) curr;
-//		curr = new GreyNode();
-//		int xMid = (widthMax+widthMin)/2;
-//		int yMid = (heightMax+heightMin)/2;
-//		float x = temp.element.x;
-//		float y = temp.element.y;
-//		if(elem.x == x && elem.y == y){
-//			return false;
-//		}
-//		if( x > xMid && y > yMid){
-//			((PRQuadTree.GreyNode)curr).NE = temp;
-//			return insertHelper(((PRQuadTree.GreyNode) curr),elem,
-//					xMid,widthMax,yMid,heightMax);
-//		}else if( x >xMid && y < yMid  ){
-//			//SE
-//			((PRQuadTree.GreyNode)curr).SE = temp;
-//			return insertHelper(((PRQuadTree.GreyNode) curr),elem,
-//					xMid,widthMax,heightMin,yMid);			
-//		}else if ( x< xMid && y <yMid){
-//			//SW
-//			((PRQuadTree.GreyNode)curr).SW = temp;
-//			return insertHelper(((PRQuadTree.GreyNode)curr),elem,
-//					widthMin,xMid,heightMin,yMid);
-//		}else{
-//			((PRQuadTree.GreyNode)curr).NW = temp;
-//			return insertHelper(((PRQuadTree.GreyNode)curr),elem,
-//					widthMin,xMid,yMid,heightMax);
-//		}
-//	}
 
 	public PRNode insertHelper(PRNode node,T elem,int widthMin,int widthMax,
 			int heightMin,int heightMax){
@@ -179,11 +124,14 @@ public class PRQuadTree<T extends Point2D.Float> {
 			float y = temp.element.y;
 			int midX = (widthMin+widthMax)/2;
 			int midY = (heightMin+heightMax)/2;
-			node = new GreyNode(midX,midY);
+			//span is the area in between which is same for height and width.
+			//To get the boundries do midX+ span and midX - span
+			int span = (widthMax -widthMin)/2;
+			node = new GreyNode(midX,midY,span);
 			//For each direction
-			if(x > midX && y > midY){//NE
+			if(x >= midX && y >= midY){//NE
 				((PRQuadTree.GreyNode)node).NE = temp;
-			}else if(x >midX && y < midY){//SE
+			}else if(x >= midX && y < midY){//SE
 				((PRQuadTree.GreyNode)node).SE = temp;
 			}else if(x <midX && y <midY){//SW
 				((PRQuadTree.GreyNode)node).SW = temp;
@@ -320,13 +268,14 @@ public class PRQuadTree<T extends Point2D.Float> {
 	}
 	
 	public Node PRNodeprint(PRNode node,Document results){
+	
 		if(node instanceof WhiteNode){
 			Element white = results.createElement("white");
 			return white;
 		}
 		if(node instanceof PRQuadTree.BlackNode){
 			Element black = results.createElement("black");
-			City city = (City) ((PRQuadTree.BlackNode) root).element;
+			City city = (City) ((PRQuadTree.BlackNode) node).element;
 			black.setAttribute("name", city.getName());
 			black.setAttribute("x", Float.toString(city.x));
 			black.setAttribute("y", Float.toString(city.y));
@@ -350,106 +299,116 @@ public class PRQuadTree<T extends Point2D.Float> {
 		quadTree.appendChild(PRNodeprint(root,results));
 	}
 	
-	private class DistanceComparator<T extends Point2D.Float> implements Comparator{
-		float x = -1;
-		float y = -1;
-		public DistanceComparator(float x,float y ){
-			this.x =x;
-			this.y = y;
-		}
-		@Override
-		public int compare(Object arg0, Object arg1) {
-			Point2D.Float point1 = (Point2D.Float)arg0;
-			Point2D.Float point2 = (Point2D.Float)arg1;
-			double dist1 = Point2D.Float.distance(x, y, point1.x, point1.y);
-			double dist2 = Point2D.Float.distance(x, y, point2.x, point2.y);
-			if(dist1 > dist2){
-				return 1;
-			}else if(dist1 < dist2){
-				return -1;
-			}
-			return 0;
-		}
-	}
-//	public T findNearest(T elem,PRNode node){
-//		DistanceComparator<T> dist = new DistanceComparator<T>(elem.x,elem.y);
-//		//TODO figure out the logic
-//		PriorityQueue<T> queue = new PriorityQueue<T>(20,dist);
-//		HashMap<T,PRNode> map = new HashMap<T,PRNode>();
-//		queue.add(root.distance());
-//		//TODO figure out how to sort by the number
-//		while(!queue.isEmpty()){
-//			Point2D.Float curr = queue.remove();
-//			Point2D.Float check = queue.peek();
-//			while(check == curr){
-//				queue.remove();
-//				check = queue.peek();
-//			}
-//			check = queue.remove();
-//			if(check != null){
-//				if(map.containsKey(check)){
-//					//return map.get(check);
-//				}
-//			}
-//			//TODO add if this is a spatial object
-//			if(curr instanceof PRQuadTree.BlackNode){
-//				//TODO determine the distance and return
-//				return  (T) (((PRQuadTree.BlackNode)map.get(curr)).element);
-//			}else if(node instanceof PRQuadTree.GreyNode){
-//				//TODO for all directions see if the distance is more
-//				//need to add the distances then add to the hashmap as well;
-//				queue.add(((PRQuadTree.GreyNode) node).NE);
-//				queue.add(((PRQuadTree.GreyNode) node).SE);
-//				queue.add(((PRQuadTree.GreyNode) node).SW);
-//				queue.add(((PRQuadTree.GreyNode) node).NW);
-//			}
-//		}
-//		return null;
-//	}
 	
-	public boolean inRadius(float x,float y, float radius, float xTest,float yTest){
-		if((((xTest-x)*(xTest-x)) +((yTest-y)*(yTest-y))) < (radius*radius)){
-			return true;
+	public TreeMap<String,City> rangeCities(int x, int y ,int radius){
+		TreeMap<String,City> tree = new TreeMap<String,City>();
+		for(PRNode n : this){
+			if(n instanceof PRQuadTree.BlackNode){
+				City city = (City) ((PRQuadTree.BlackNode) n).element;
+				if(Point2D.Float.distance(x, y, city.x, city.y) <= radius){
+					tree.put(city.getName(),city);
+				}
+			}
 		}
-		return false;
+		return tree;
+	}
+	
+	public double distance(float x1,float y1,float x2, float y2){
+		float distance = ((x1-x2)*(x1-x2)) + ((y1-y2)*(y1-y2));
+		return Math.sqrt(distance);
+	}
+	
+	public double closestDistance (int span, int xGrey,int yGrey,int x,int y){
+		int xMax = xGrey + span;
+		int xMin= xGrey -span;
+		int yMax= yGrey +span;
+		int yMin = yGrey-span;
+		double distance = -1;
+		//greater then x box
+		if(x > xMax){
+			//greater then y box
+			if( y  > yMax){
+				distance = distance(x,y,xMax,yMax);
+			}else if(y < yMin){//less then y box
+				distance = distance(x,y,xMax,yMin);
+			}else{//in Y range
+				distance = distance(x,y,xMax,y);
+			}
+		}else if (x < xMin){//smaller then x 
+			if(y> yMax){//greater then y 
+				distance = distance(x,y,xMin,yMax);
+			}else if (y < yMin){//less then y
+				distance = distance(x,y,xMin,yMin);
+			}else{// in  y range
+				distance = distance(x,y,xMin,y);
+			}
+		}else{//in x range
+			if( y > yMax){
+				distance = distance(x,y,x,yMax);
+
+			}else if(y < yMin){
+				distance = distance(x,y,x,yMin);
+			}else{
+				distance = distance(x,y,x,y);
+			}
+		}
+		return distance;
 	}
 
-	private List<City> rangeCitiesHelper(PRNode node, float x, float y,
-			float radius, int widthMin,int widthMax,int heightMin,int heightMax) {
-		// TODO Auto-generated method stub
-		LinkedList<City> cities = new LinkedList<City>();
-		if(node instanceof PRInner){
-			//Make sure that things inside this range can be in the radius.
-			//Need to just check for the min or max depending on if x < or > 
+	public double getDistance(PRNode node, int x, int y){
+		double distance = Double.MAX_VALUE;
+		if(node instanceof PRQuadTree.BlackNode){
+			Point2D.Float p = ((PRQuadTree.BlackNode) node).element;
+			distance = distance(x,y,p.x,p.y);
+		}else if(node instanceof PRQuadTree.GreyNode){
+			int xGr = ((PRQuadTree.GreyNode) node).x;
+			int yGr = ((PRQuadTree.GreyNode) node).y;
+			int span = ((PRQuadTree.GreyNode) node).span;
+			distance = closestDistance(span,xGr,yGr,x,y);
+		}
+		return distance;
+	}
+	
+	public void enqueueChildren(PRNode node,PriorityQueue<Double> distanceQ,
+			HashMap<Double,PRNode> distanceToElement,int x,int y,double distance){
+		
+		double branchDistance = getDistance(node,x,y);
+		distanceQ.add(branchDistance);
+		distanceToElement.put(branchDistance, node);
+	}
+	
+	
+	public City nearestCity(int x, int y){
+		//TODO this method, have check to see if element already exists so both can be returned
+		HashMap<Double,PRNode> distanceToElement = new HashMap<Double,PRNode>();
+		PriorityQueue<Double> distanceQ = new  PriorityQueue<Double>();
+		PRNode node = root;
+		double initDistance = getDistance(node,x ,y );
+		distanceQ.add(initDistance);
+		distanceToElement.put(initDistance, root);
+		while(!distanceQ.isEmpty()){
+			double distance =  distanceQ.remove();
+			PRNode p = distanceToElement.get(distance);
+			if( p instanceof PRQuadTree.BlackNode){
+				while(distanceQ.peek() == distance){
+					distanceToElement.remove(distance);
+					distanceQ.remove();
+				}
+				return (City)((PRQuadTree.BlackNode) p).element;
+			}else if(p instanceof PRQuadTree.GreyNode){
+				enqueueChildren(((PRQuadTree.GreyNode) p).NE,distanceQ,
+						distanceToElement,x,y,distance);
+				enqueueChildren(((PRQuadTree.GreyNode) p).NW,distanceQ,
+						distanceToElement,x,y,distance);
+				enqueueChildren(((PRQuadTree.GreyNode) p).SE,distanceQ,
+						distanceToElement,x,y,distance);
+				enqueueChildren(((PRQuadTree.GreyNode) p).SW,distanceQ,
+						distanceToElement,x,y,distance);
+			}
 			
 		}
-		if(node instanceof WhiteNode){
-			return new LinkedList<City>();
-		}
-		if(node instanceof  PRQuadTree.BlackNode){
-			Point2D.Float city = ((PRQuadTree.BlackNode) node).element;
-			if(inRadius(x,y,radius,city.x,city.y)){
-				List<City> l = new LinkedList<City>();
-				return l;
-				//TODO add this city to list
-			}
-		}
-		return cities;
-		
-	}
-	
-	/**
-	 * Checks to see if an element is in a tree
-	 * @param elem
-	 * @return
-	 */
-	public List<City> rangeCities(float x,float y, float radius,boolean saveMap){
-		//rangeCitiesHelper(root,x,y,radius,saveMap);
-		
-		//TODO implement this
 		return null;
 	}
-
 	public boolean clearAll(){
 		root = WhiteNode.getInstance();
 		//TODO decide how to return
@@ -480,5 +439,12 @@ public class PRQuadTree<T extends Point2D.Float> {
 	@Override
 	public String toString(){
 		return toStringHelp(root); 
+	}
+
+
+	@Override
+	public Iterator<PRQuadTree.PRNode> iterator() {
+		// TODO Auto-generated method stub
+		return new PRIterator(root);
 	}
 }

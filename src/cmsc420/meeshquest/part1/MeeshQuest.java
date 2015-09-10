@@ -81,9 +81,9 @@ public class MeeshQuest {
     		case "mapCity" : resultElement.appendChild(command.mapCity(commandNode));break;
     		case "unmapCity" :resultElement.appendChild(command.unmapCity(commandNode));break;
     		case "printPRQuadtree": resultElement.appendChild(command.printPRQuadTree(commandNode));break;
-    		case "saveMap": command.saveMap(commandNode);break;
-    		case "rangeCities": command.rangeCities(commandNode);break;
-    		case "nearestCity": command.nearestCity(commandNode);break;
+    		case "saveMap": resultElement.appendChild(command.saveMap(commandNode,false,0,0,0));break;
+    		case "rangeCities": resultElement.appendChild((command.rangeCities(commandNode)));break;
+    		case "nearestCity": resultElement.appendChild(command.nearestCity(commandNode));break;
     		default: break;
     	}
     	
