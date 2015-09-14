@@ -94,22 +94,20 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 	public PRNode insertHelper(PRNode node,T elem,int widthMin,int widthMax,
 			int heightMin,int heightMax){
 		if(node instanceof PRQuadTree.GreyNode){
-			//TODO add the  node to one of the quadrants
 			float x = elem.x;
 			float y = elem.y;
 			int midX = (widthMin+widthMax)/2;
 			int midY = (heightMin+heightMax)/2;
-			//For each direction
-			if(x >midX && y >midY){//NE
+			if(x >=midX && y >=midY){//NE
 				((PRQuadTree.GreyNode) node).NE = insertHelper(((PRQuadTree.GreyNode) node).NE,
 							 elem, midX, widthMax, midY, heightMax);
-			}else if(x >midX && y < midY){//SE
+			}else if(x >=midX && y < midY){//SE
 				((PRQuadTree.GreyNode) node).SE = insertHelper(((PRQuadTree.GreyNode) node).SE,
 							 elem, midX, widthMax, heightMin, midY);
-			}else if(x <midX && y <midY){//SW
+			}else if(x <midX && y < midY){//SW
 				((PRQuadTree.GreyNode) node).SW = insertHelper(((PRQuadTree.GreyNode) node).SW,
 						 elem,widthMin, midX, heightMin, midY);
-			}else if(x <midX && y >midY){//NW
+			}else if(x <midX && y >=midY){//NW
 				((PRQuadTree.GreyNode) node).NW = insertHelper(((PRQuadTree.GreyNode) node).NW,
 							 elem, widthMin,midX, midY, heightMax);
 			}
@@ -118,7 +116,6 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 			//Store the current info
 			BlackNode temp =  (BlackNode) node;
 			//add a new grey node that splits the grid
-		
 			//put the info back  in  then call insertHelper  on this grey node again
 			float x = temp.element.x;
 			float y = temp.element.y;
@@ -133,30 +130,26 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 				((PRQuadTree.GreyNode)node).NE = temp;
 			}else if(x >= midX && y < midY){//SE
 				((PRQuadTree.GreyNode)node).SE = temp;
-			}else if(x <midX && y <midY){//SW
+			}else if(x < midX && y < midY){//SW
 				((PRQuadTree.GreyNode)node).SW = temp;
-			}else if(x <midX && y >midY){//N
+			}else if(x <midX && y >=midY){//N
 				((PRQuadTree.GreyNode)node).NW = temp;
 			}
 			node =  insertHelper(node,elem,widthMin,widthMax,heightMin,heightMax);
 		}
 		if(node instanceof PRQuadTree.WhiteNode){
-			//TODO put the city in this node
 			node = new BlackNode(elem);
 		}
-		return node;//TODO this method
+		return node;
 		
 	}
 	public boolean insert(T elem){
-		//Failures
 		if(elem.x > widthMax || elem.x < widthMin ||
 				elem.y> heightMax || elem.y<heightMin){
 			return false;
 		}
-		//First checks for an empty tree
 		root = insertHelper(root,elem, widthMin, widthMax, heightMin, heightMax);
-		
-		return true;//TODO figure this out
+		return true;
 	}
 
 	public PRNode deleteHelper(PRNode node, T elem,int widthMin,int widthMax,
@@ -167,16 +160,16 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 		if(node instanceof PRQuadTree.GreyNode){
 			int xMid = (widthMin + widthMax)/2;
 			int yMid = (heightMin+heightMax)/2;
-			if(x > xMid && y > yMid){//NE
+			if(x >= xMid && y >= yMid){//NE
 				((PRQuadTree.GreyNode)node).NE = deleteHelper(((PRQuadTree.GreyNode)node).NE,
 						elem,xMid,widthMax,yMid,heightMax);
-			}else if(x >xMid && y<yMid){//SE
+			}else if(x >=xMid && y<yMid){//SE
 				((PRQuadTree.GreyNode)node).SE = deleteHelper(((PRQuadTree.GreyNode)node).SE,
 						elem,xMid,widthMax,yMid,heightMax);
 			}else if( x< xMid && y < yMid){//SW
 				((PRQuadTree.GreyNode)node).SW = deleteHelper(((PRQuadTree.GreyNode)node).SW,
 						elem,xMid,widthMax,yMid,heightMax);
-			}else if( x < xMid && y >yMid){//NW
+			}else if( x < xMid && y >=yMid){//NW
 				((PRQuadTree.GreyNode)node).NW = deleteHelper(((PRQuadTree.GreyNode)node).NW,
 						elem,xMid,widthMax,yMid,heightMax);
 			}
@@ -216,7 +209,6 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 		try {
 			canvas.save(fileName);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return true;
@@ -231,16 +223,16 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 		if(node instanceof PRQuadTree.GreyNode){
 			int xMid = (widthMin + widthMax)/2;
 			int yMid = (heightMin+heightMax)/2;
-			if(x > xMid && y > yMid){//NE
+			if(x >= xMid && y >= yMid){//NE
 				((PRQuadTree.GreyNode)node).NE = findHelper(((PRQuadTree.GreyNode)node).NE,
 						elem,xMid,widthMax,yMid,heightMax);
-			}else if(x >xMid && y<yMid){//SE
+			}else if(x >=xMid && y<yMid){//SE
 				((PRQuadTree.GreyNode)node).SE = findHelper(((PRQuadTree.GreyNode)node).SE,
 						elem,xMid,widthMax,yMid,heightMax);
 			}else if( x< xMid && y < yMid){//SW
 				((PRQuadTree.GreyNode)node).SW = findHelper(((PRQuadTree.GreyNode)node).SW,
 						elem,xMid,widthMax,yMid,heightMax);
-			}else if( x < xMid && y >yMid){//NW
+			}else if( x < xMid && y >=yMid){//NW
 				((PRQuadTree.GreyNode)node).NW = findHelper(((PRQuadTree.GreyNode)node).NW,
 						elem,xMid,widthMax,yMid,heightMax);
 			}
@@ -282,7 +274,6 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 			return black;
 		}
 		if(node instanceof PRQuadTree.GreyNode){
-			//TODO verify the ordering
 			Element greyRoot = results.createElement("gray");
 			greyRoot.setAttribute("x", Integer.toString(((PRQuadTree.GreyNode) node).x));
 			greyRoot.setAttribute("y", Integer.toString(((PRQuadTree.GreyNode) node).y));
@@ -299,7 +290,7 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 		quadTree.appendChild(PRNodeprint(root,results));
 	}
 	
-	
+	//TODO redo range cities to be more efficient
 	public TreeMap<String,City> rangeCities(int x, int y ,int radius){
 		TreeMap<String,City> tree = new TreeMap<String,City>();
 		for(PRNode n : this){
@@ -379,7 +370,6 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 	
 	
 	public City nearestCity(int x, int y){
-		//TODO this method, have check to see if element already exists so both can be returned
 		HashMap<Double,PRNode> distanceToElement = new HashMap<Double,PRNode>();
 		PriorityQueue<Double> distanceQ = new  PriorityQueue<Double>();
 		PRNode node = root;
@@ -411,7 +401,6 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 	}
 	public boolean clearAll(){
 		root = WhiteNode.getInstance();
-		//TODO decide how to return
 		return true;
 	}
 	
@@ -441,10 +430,8 @@ public class PRQuadTree<T extends Point2D.Float> implements Iterable<PRQuadTree.
 		return toStringHelp(root); 
 	}
 
-
 	@Override
 	public Iterator<PRQuadTree.PRNode> iterator() {
-		// TODO Auto-generated method stub
 		return new PRIterator(root);
 	}
 }

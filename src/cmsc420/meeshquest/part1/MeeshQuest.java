@@ -26,10 +26,15 @@ public class MeeshQuest {
     public static void main(String[] args) {
     	
     	Document results = null;
+    	try {
+			results = XmlUtility.getDocumentBuilder().newDocument();
+		} catch (ParserConfigurationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
         try {
         	Document doc = XmlUtility.validateNoNamespace(System.in);
         	//Build the new XML with the results
-        	results = XmlUtility.getDocumentBuilder().newDocument();
         	Element resultElement = results.createElement("results");
         	results.appendChild(resultElement);
         	//Gets the top level command node
@@ -46,12 +51,12 @@ public class MeeshQuest {
         			commandNode = (Element) nl.item(i);
         			//Process command nodes here Use a switch statement
         			processCommands(command,commandNode,results,spatialHeight,spatialWidth,resultElement);
-        			/* TODO: Process your commandNode here */
         		}
         	}
         } catch (SAXException | IOException | ParserConfigurationException e) {
         	e.printStackTrace();
         	/* TODO: Process fatal error here */
+        	results.appendChild(results.createElement("fatalError"));
         	
 		} finally {
             try {
