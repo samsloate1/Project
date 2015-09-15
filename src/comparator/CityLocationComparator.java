@@ -13,7 +13,7 @@ import Structures.City;
  */
 public class CityLocationComparator implements Comparator<Point2D.Float> {
 	@Override
-	public int compare(Float o1, Float o2) {
+	public int compare(Point2D.Float o1, Point2D.Float o2) {
 		if(o1.y > o2.y){
 			return 1;
 		}else if (o1.y <o2.y){
