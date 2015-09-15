@@ -13,6 +13,7 @@ import org.w3c.dom.Node;
 import prquadtree.PRQuadTree;
 
 import Structures.City;
+import avltree.AVLTree;
 
 public class NodeMaker {
 	Document results = null;
@@ -246,6 +247,11 @@ public class NodeMaker {
 		}else{
 			return makeNode(false,error,"nearestCity",parameterList,output);
 		}
+		
+	}
+
+	public void avlTree(AVLTree<City, String> avl, String error) {
+		// TODO Auto-generated method stub
 		
 	}
 

@@ -1,8 +1,12 @@
 package avltree;
 
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Stack;
 
-public class AVLTree<K,V>{
+import prquadtree.PRQuadTree.PRNode;
+
+public class AVLTree<K,V> implements Iterable{
 	private AVLNode<K,V> root;
 	private Comparator<K> comparator;
 	public AVLTree(Comparator<K> compare){
@@ -23,6 +27,9 @@ public class AVLTree<K,V>{
 			height = 0;
 		}
 	}
+	public int getHeight(){
+		return -1;//TODO return the height
+	}
 
 	private int height(AVLNode<K,V> node){
 		if(node == null){
@@ -37,9 +44,26 @@ public class AVLTree<K,V>{
 			return a;
 		return b;
 	}
-	
-	public void setComparator(Comparator compare){
+
+	public void setComparator(Comparator<K> compare){
 		this.comparator =  compare;
+	}
+
+	public boolean findHelper(AVLNode<K,V> node,K key){
+		if(node == null){
+			return false;
+		}
+		if(comparator.compare(node.key, key)==0){
+			return true;
+		}else if(comparator.compare(node.key, key) > 0){
+			return findHelper(node.left,key);
+		}else if(comparator.compare(node.key, key) < 0){
+			return findHelper(node.right,key);
+		}
+		return false;
+	}
+	public boolean find(K key){
+		return findHelper(root,key);
 	}
 	private AVLNode<K,V> rightRotate(AVLNode<K,V> node){
 		AVLNode<K,V> n = node.left;
@@ -70,7 +94,7 @@ public class AVLTree<K,V>{
 			node = new AVLNode<K,V>(key,value);
 		}else if(comparator.compare(node.key,key) > 0){
 			node.left = insert(key,value,node.left);
-			if(height(node.left) - height(node.right) == 2){//TODO calculate the hiehgt difference
+			if(height(node.left) - height(node.right) == 2){
 				if(comparator.compare(node.key, node.left.key) < 0){
 					node = rightRotate(node);
 				}else{
@@ -99,5 +123,29 @@ public class AVLTree<K,V>{
 	}
 	public void clearAll(){
 		root = null;
+	}
+	@Override
+	public Iterator<K> iterator() {
+		return new AVLIterator(root);
+	}
+	private class AVLIterator implements Iterator<K>{
+		Stack<AVLNode<K,V>>nodeStack;
+		AVLNode<K,V> node;
+		public AVLIterator(AVLNode<K,V> root){
+			nodeStack= new Stack<AVLNode<K,V>>();
+			nodeStack.push(root);
+		}
+		@Override
+		public boolean hasNext() {
+			return !nodeStack.isEmpty();
+		}
+
+		@Override
+		public K next() {
+			node = nodeStack.pop();
+			nodeStack.push(node.left);
+			nodeStack.push(node.right);
+			return node.key;
+		}
 	}
 }

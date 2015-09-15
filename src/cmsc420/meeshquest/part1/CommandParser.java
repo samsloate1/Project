@@ -21,7 +21,8 @@ import prquadtree.PRQuadTree.PRNode;
 import xml.NodeMaker;
 
 import Structures.City;
-
+import avltree.AVLTree;
+import comparator.CityComparator;
 import comparator.CityLocationComparator;
 import comparator.CityNameComparator;
 
@@ -30,6 +31,7 @@ public class CommandParser {
 	private TreeMap<String,City> nameToCity = null;
 	private HashSet<String> mappedCities = null;
 	private PRQuadTree<City> prtree = null;
+	private AVLTree<City,String> avl = null;
 	private TreeMap<Point2D.Float,City> cityLocations = new TreeMap<Point2D.Float,City>();
 	int spatialHeight = -1;
 	int spatialWidth = -1;
@@ -41,9 +43,11 @@ public class CommandParser {
 	public CommandParser(int spatialHeight, int spatialWidth, Document results){
 		CityNameComparator nameCompare = new CityNameComparator();
 		CityLocationComparator locationCompare = new CityLocationComparator();
+		CityComparator cityCompare = new CityComparator();
 		nameToCity = new TreeMap<String,City>(nameCompare);
 		cityLocations = new TreeMap<Point2D.Float,City>(locationCompare);
 		mappedCities = new HashSet<String>();
+		avl = new AVLTree<City,String>(cityCompare);
 		this.spatialWidth = spatialWidth;
 		this.spatialHeight = spatialHeight;
 		this.results = results;
@@ -70,6 +74,7 @@ public class CommandParser {
 				City newCity = new City(name, color, x, y,rad);
 				nameToCity.put(name, newCity);
 				cityLocations.put(new Point2D.Float(x, y), newCity);
+				avl.insert(newCity, name);
 				return maker.createCityXml(true,null,name,x,y,rad,color);
 			}
 		}
@@ -95,6 +100,8 @@ public class CommandParser {
 	public Node clearAll(Element commandNode) {
 		cityLocations.clear();
 		nameToCity.clear();
+		mappedCities.clear();
+		avl.clearAll();
 		return maker.clearAllXml();
 		//TODO clear the PRquad tree
 
@@ -233,6 +240,15 @@ public class CommandParser {
 		}
 		City c = prtree.nearestCity(Integer.parseInt(x), Integer.parseInt(y));
 		return maker.nearestCity(x,y,error,c);
+	}
+	public Node printAVLTree(Element commandNode){
+		//TODO print avl tree
+		String error = null;
+		if(nameToCity.size()==0){
+			error = "emptyTree";
+		}
+		maker.avlTree(avl,error);
+		return null;
 	}
 
 }
